@@ -20,8 +20,23 @@ fn main() -> ! {
     let mut timer1 = Timer::new(board.TIMER1);
     let mut display = Display::new(board.display_pins);
 
+    /**
+     * RNG
+     * rng_value: read rng
+     * rng_start: trigger generation
+     * rng_stop: stop generation
+     * rng_valrdy: event triggered when each rng is created
+     */
+    let rng = board.RNG;
+    let rng_value = &rng.value;
+    let rng_start = &rng.tasks_start;
+    let rng_stop = &rng.tasks_stop;
+    let rng_valrdy = &rng.events_valrdy;
+
     let mut grid = [[0u8; 5]; 5];
-    grid[0][1] = 1;
+    for r in 0..5 {
+        grid[r][1] = 1
+    }
 
     // done, life
 
