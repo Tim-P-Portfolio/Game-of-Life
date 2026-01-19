@@ -21,8 +21,13 @@ fn main() -> ! {
     let mut display = Display::new(board.display_pins);
 
     let mut grid = [[0u8; 5]; 5];
+    grid[0][1] = 1;
+
+    // done, life
 
     loop {
+        life(&mut grid);
+
         display.show(&mut timer1, grid, 100);
         // 10 fps
         timer1.delay_ms(1000 / (FPS / 2));
