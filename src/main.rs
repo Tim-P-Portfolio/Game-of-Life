@@ -5,10 +5,7 @@ use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
 use microbit::{
     Board,
-    display::{
-        self,
-        nonblocking::{BitImage, Display},
-    },
+    display::{self, blocking::Display},
     gpio::DisplayPins,
     hal::{self, timer},
 };
@@ -23,17 +20,17 @@ fn main() -> ! {
 
     let board = Board::take().unwrap();
     let mut timer1 = hal::Timer::new(board.TIMER1);
-    let mut display = Display::new(board.TIMER0, board.display_pins);
+    let mut display = Display::new(board.display_pins);
 
     let mut grid = [[0u8; 5]; 5];
     grid[0][1] = 1;
-    let image = &BitImage::new(&grid);
+    // let image = &BitImage::new(&grid);
 
     loop {
-        display.show(image);
+        display.show(&mut timer1, grid, 100);
         // 10 fps
-        timer1.delay_ms(1000 / FPS / 2);
+        timer1.delay_ms(1000 / (FPS / 2));
         display.clear();
-        timer1.delay_ms(1000 / FPS / 2);
+        timer1.delay_ms(1000 / (FPS / 2));
     }
 }
