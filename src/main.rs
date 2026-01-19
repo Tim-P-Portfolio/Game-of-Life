@@ -1,6 +1,9 @@
 #![no_main]
 #![no_std]
 
+mod life;
+use life::*;
+
 use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
 use microbit::{Board, display::blocking::Display, hal::timer::Timer};
@@ -18,7 +21,6 @@ fn main() -> ! {
     let mut display = Display::new(board.display_pins);
 
     let mut grid = [[0u8; 5]; 5];
-    grid[0][1] = 1;
 
     loop {
         display.show(&mut timer1, grid, 100);
