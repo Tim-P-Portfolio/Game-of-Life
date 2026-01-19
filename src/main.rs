@@ -7,18 +7,23 @@ use microbit::{
     Board,
     display::{self, nonblocking::Display},
     gpio::DisplayPins,
-    hal::timer,
+    hal::{self, timer},
 };
 use panic_halt as _;
 use rtt_target::{rprintln, rtt_init_print};
+
+const FPS: u32 = 10u32;
 
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
 
     let board = Board::take().unwrap();
-    let timer1 = board.TIMER1;
+    let mut timer1 = hal::Timer::new(board.TIMER1);
     let display = Display::new(board.TIMER0, board.display_pins);
 
-    loop {}
+    loop {
+        // 10 fps
+        timer1.delay_ms(1000 / FPS);
+    }
 }
