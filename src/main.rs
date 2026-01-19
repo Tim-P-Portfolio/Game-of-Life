@@ -5,7 +5,7 @@ use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
 use microbit::{
     Board,
-    display::{self, blocking::Display, nonblocking::Display},
+    display::{self, nonblocking::Display},
     gpio::DisplayPins,
     hal::timer,
 };
@@ -17,8 +17,8 @@ fn main() -> ! {
     rtt_init_print!();
 
     let board = Board::take().unwrap();
-    let timer0 = board.TIMER0;
-    let display = Display::new(timer0, board.display_pins);
+    let timer1 = board.TIMER1;
+    let display = Display::new(board.TIMER0, board.display_pins);
 
     loop {}
 }
