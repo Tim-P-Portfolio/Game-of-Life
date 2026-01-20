@@ -24,23 +24,23 @@ fn main() -> ! {
     rprintln!("{}", rng.random_u8());
 
     let mut grid = [[0u8; 5]; 5];
+    let mut row;
     for c in 0..5 {
+        row = [0; 5];
         for r in 0..5 {
-            let num = rng.random_u8() / 255;
+            let num = if rng.random_u8() > 127 { 1 } else { 0 };
             grid[r][c] = num;
-            rprintln!("{}", num);
+            row[r] = num;
         }
+        rprintln!("{:?}", row);
     }
 
-    // done, life
+    // life module: done, life
 
     loop {
-        life(&mut grid);
+        // life(&mut grid);
 
-        display.show(&mut timer1, grid, 100);
+        display.show(&mut timer1, grid, 1000 / FPS);
         // 10 fps
-        timer1.delay_ms(1000 / (FPS / 2));
-        display.clear();
-        timer1.delay_ms(1000 / (FPS / 2));
     }
 }
