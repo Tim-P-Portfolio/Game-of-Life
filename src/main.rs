@@ -2,9 +2,6 @@
 #![no_std]
 
 mod life;
-
-use core::char::from_digit;
-
 use life::*;
 
 use cortex_m_rt::entry;
@@ -13,7 +10,19 @@ use microbit::{Board, display::blocking::Display, hal::rng::Rng, hal::timer::Tim
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
-const FPS: u32 = 10u32;
+const MICROBIT: [&str; 7] = [
+    // Top
+    "╭───────────────────────╮",
+    "│          ▁▁▁          │",
+    "│         (● ●)         │",
+    "│          ▔▔▔          │",
+    // Bottom
+    "│                       │",
+    "│ ◯    ◯    ◯    ◯    ◯ │",
+    r#"╰/▔\__/▔\__/▔\__/▔\__/▔\╯"#,
+];
+
+const FPS: u32 = 10;
 
 #[entry]
 fn main() -> ! {
@@ -28,28 +37,34 @@ fn main() -> ! {
     let mut row;
 
     rprintln!("");
-    rprintln!("┌───────────┐");
+
+    rprintln!("\r{}", MICROBIT[0]);
+    rprintln!("\r{}", MICROBIT[1]);
+    rprintln!("\r{}", MICROBIT[2]);
+    rprintln!("\r{}", MICROBIT[3]);
 
     for c in 0..5 {
         row = [0; 5];
-        rprint!("│");
+        rprint!("\r│      ");
         for r in 0..5 {
+            // 0-127: 0, 128-255: 1
             let num = if rng.random_u8() > 127 { 1 } else { 0 };
-            grid[r][c] = num;
+            grid[c][r] = num;
             row[r] = num;
-            rprint!("{}", if num == 0 { " #" } else { " ." });
+            rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
         }
-        rprint!(" │");
+        rprint!("       │");
 
         rprintln!("");
     }
-    rprintln!("└───────────┘");
-    // life module: done, life
+
+    rprintln!("\r{}", MICROBIT[4]);
+    rprintln!("\r{}", MICROBIT[5]);
+    rprintln!("\r{}", MICROBIT[6]);
 
     loop {
-        // life(&mut grid);
+        life(&mut grid);
 
         display.show(&mut timer1, grid, 1000 / FPS);
-        // 10 fps
     }
 }
