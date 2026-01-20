@@ -2,11 +2,18 @@
 #![no_std]
 
 mod life;
+use core::char::from_u32;
+
 use life::*;
 
 use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
-use microbit::{Board, display::blocking::Display, hal::rng::Rng, hal::timer::Timer};
+use microbit::{
+    Board,
+    display::blocking::Display,
+    hal::{rng::Rng, time, timer::Timer},
+    pac::generic::Readable,
+};
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
@@ -30,6 +37,8 @@ fn main() -> ! {
 
     let board = Board::take().unwrap();
     let mut timer1 = Timer::new(board.TIMER1);
+    let mut timer2 = Timer::new(board.TIMER2);
+
     let mut display = Display::new(board.display_pins);
     let mut rng = Rng::new(board.RNG);
 
@@ -38,10 +47,9 @@ fn main() -> ! {
 
     rprintln!("");
 
-    rprintln!("\r{}", MICROBIT[0]);
-    rprintln!("\r{}", MICROBIT[1]);
-    rprintln!("\r{}", MICROBIT[2]);
-    rprintln!("\r{}", MICROBIT[3]);
+    for i in 0..4 {
+        rprintln!("\r{}", MICROBIT[i]);
+    }
 
     for c in 0..5 {
         row = [0; 5];
@@ -58,13 +66,20 @@ fn main() -> ! {
         rprintln!("");
     }
 
-    rprintln!("\r{}", MICROBIT[4]);
-    rprintln!("\r{}", MICROBIT[5]);
-    rprintln!("\r{}", MICROBIT[6]);
+    for i in 5..7 {
+        rprintln!("\r{}", MICROBIT[i]);
+    }
+
+    // let mut start;
+    // timer2.start(0xFFFF_FFFF_u32);
 
     loop {
+        // start = timer2.read();
+
         life(&mut grid);
 
         display.show(&mut timer1, grid, 1000 / FPS);
+
+        // rprintln!("{}", (timer2.read() - start) / 1000);
     }
 }
