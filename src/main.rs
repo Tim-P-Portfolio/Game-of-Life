@@ -2,7 +2,8 @@
 #![no_std]
 
 mod life;
-use core::str;
+
+use core::char::from_digit;
 
 use life::*;
 
@@ -10,7 +11,7 @@ use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
 use microbit::{Board, display::blocking::Display, hal::rng::Rng, hal::timer::Timer};
 use panic_halt as _;
-use rtt_target::{rprintln, rtt_init_print};
+use rtt_target::{rprint, rprintln, rtt_init_print};
 
 const FPS: u32 = 10u32;
 
@@ -23,23 +24,26 @@ fn main() -> ! {
     let mut display = Display::new(board.display_pins);
     let mut rng = Rng::new(board.RNG);
 
-    rprintln!("{}", rng.random_u8());
-
     let mut grid = [[0u8; 5]; 5];
     let mut row;
+
+    rprintln!("");
+    rprintln!("┌───────────┐");
+
     for c in 0..5 {
         row = [0; 5];
+        rprint!("│");
         for r in 0..5 {
             let num = if rng.random_u8() > 127 { 1 } else { 0 };
             grid[r][c] = num;
             row[r] = num;
+            rprint!("{}", if num == 0 { " #" } else { " ." });
         }
-        rprintln!(
-            "{:?}",
-            str.collect(row.map(|x| if x == 1 { "#" } else { " " }).concat()
-        );
-    }
+        rprint!(" │");
 
+        rprintln!("");
+    }
+    rprintln!("└───────────┘");
     // life module: done, life
 
     loop {
