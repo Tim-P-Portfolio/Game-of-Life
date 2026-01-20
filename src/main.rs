@@ -2,6 +2,8 @@
 #![no_std]
 
 mod life;
+use core::str;
+
 use life::*;
 
 use cortex_m_rt::entry;
@@ -32,7 +34,10 @@ fn main() -> ! {
             grid[r][c] = num;
             row[r] = num;
         }
-        rprintln!("{:?}", row);
+        rprintln!(
+            "{:?}",
+            str.collect(row.map(|x| if x == 1 { "#" } else { " " }).concat()
+        );
     }
 
     // life module: done, life
