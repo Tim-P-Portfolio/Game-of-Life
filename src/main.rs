@@ -2,17 +2,16 @@
 #![no_std]
 
 mod life;
-use core::char::from_u32;
-
 use life::*;
 
-use cortex_m_rt::entry;
 use embedded_hal::delay::DelayNs;
+use embedded_hal::digital::InputPin;
+
+use cortex_m_rt::entry;
 use microbit::{
     Board,
     display::blocking::Display,
-    hal::{rng::Rng, time, timer::Timer},
-    pac::generic::Readable,
+    hal::{rng::Rng, timer::Timer},
 };
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
@@ -37,13 +36,14 @@ fn main() -> ! {
 
     let board = Board::take().unwrap();
     let mut timer1 = Timer::new(board.TIMER1);
-    let mut timer2 = Timer::new(board.TIMER2);
 
     let mut display = Display::new(board.display_pins);
     let mut rng = Rng::new(board.RNG);
 
     let mut grid = [[0u8; 5]; 5];
     let mut row;
+
+    let mut button_a = board.buttons.button_a.into_pullup_input();
 
     rprintln!("");
 
@@ -70,16 +70,16 @@ fn main() -> ! {
         rprintln!("\r{}", MICROBIT[i]);
     }
 
-    // let mut start;
-    // timer2.start(0xFFFF_FFFF_u32);
-
     loop {
-        // start = timer2.read();
-
         life(&mut grid);
 
-        display.show(&mut timer1, grid, 1000 / FPS);
+        let button_state = button_a.is_low().unwrap();
+        if button_state == true {
+            rprintln!("Low");
+            timer1.delay_ms(1000 / FPS);
+        } else {
+        }
 
-        // rprintln!("{}", (timer2.read() - start) / 1000);
+        display.show(&mut timer1, grid, 1000 / FPS);
     }
 }
