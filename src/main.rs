@@ -30,33 +30,38 @@ const MICROBIT: [&str; 7] = [
 
 const FPS: u32 = 10;
 
-struct Grid {}
+struct Grid {
+    grid: [[u8; 5]; 5],
+}
 
-fn generate_grid(&(mut grid): &[[u8; 5]; 5], mut rng: Rng) -> [[u8; 5]; 5] {
-    // Display first 3 lines of the microbit in the terminal
-    for i in 0..4 {
-        rprintln!("\r{}", MICROBIT[i]);
+impl Grid {
+    fn new(&mut self) {
+        self.grid = [[0; 5]; 5];
     }
-
-    for c in 0..5 {
-        rprint!("\r│      ");
-        for r in 0..5 {
-            // 0-127: 0, 128-255: 1
-            let num = if rng.random_u8() > 127 { 1 } else { 0 };
-            grid[c][r] = num;
-            rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
+    fn generate_grid(&mut self, mut rng: Rng) {
+        // Display first 3 lines of the microbit in the terminal
+        for i in 0..4 {
+            rprintln!("\r{}", MICROBIT[i]);
         }
-        rprint!("       │");
 
-        rprintln!("");
+        for c in 0..5 {
+            rprint!("\r│      ");
+            for r in 0..5 {
+                // 0-127: 0, 128-255: 1
+                let num = if rng.random_u8() > 127 { 1 } else { 0 };
+                self.grid[c][r] = num;
+                rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
+            }
+            rprint!("       │");
+
+            rprintln!("");
+        }
+
+        // Display last 3 lines of the microbit in the terminal
+        for i in 5..7 {
+            rprintln!("\r{}", MICROBIT[i]);
+        }
     }
-
-    // Display last 3 lines of the microbit in the terminal
-    for i in 5..7 {
-        rprintln!("\r{}", MICROBIT[i]);
-    }
-
-    grid
 }
 
 #[entry]
@@ -69,7 +74,7 @@ fn main() -> ! {
     let mut display = Display::new(board.display_pins);
     let mut rng = Rng::new(board.RNG);
 
-    let mut grid = [[0u8; 5]; 5];
+    let mut grid = Grid::new();
 
     let mut button_a = board.buttons.button_a.into_pullup_input();
     let mut button_b = board.buttons.button_b.into_pullup_input();
