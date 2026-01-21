@@ -30,6 +30,35 @@ const MICROBIT: [&str; 7] = [
 
 const FPS: u32 = 10;
 
+struct Grid {}
+
+fn generate_grid(&(mut grid): &[[u8; 5]; 5], mut rng: Rng) -> [[u8; 5]; 5] {
+    // Display first 3 lines of the microbit in the terminal
+    for i in 0..4 {
+        rprintln!("\r{}", MICROBIT[i]);
+    }
+
+    for c in 0..5 {
+        rprint!("\r│      ");
+        for r in 0..5 {
+            // 0-127: 0, 128-255: 1
+            let num = if rng.random_u8() > 127 { 1 } else { 0 };
+            grid[c][r] = num;
+            rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
+        }
+        rprint!("       │");
+
+        rprintln!("");
+    }
+
+    // Display last 3 lines of the microbit in the terminal
+    for i in 5..7 {
+        rprintln!("\r{}", MICROBIT[i]);
+    }
+
+    grid
+}
+
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
@@ -41,40 +70,20 @@ fn main() -> ! {
     let mut rng = Rng::new(board.RNG);
 
     let mut grid = [[0u8; 5]; 5];
-    let mut row;
 
     let mut button_a = board.buttons.button_a.into_pullup_input();
+    let mut button_b = board.buttons.button_b.into_pullup_input();
 
     rprintln!("");
-
-    for i in 0..4 {
-        rprintln!("\r{}", MICROBIT[i]);
-    }
-
-    for c in 0..5 {
-        row = [0; 5];
-        rprint!("\r│      ");
-        for r in 0..5 {
-            // 0-127: 0, 128-255: 1
-            let num = if rng.random_u8() > 127 { 1 } else { 0 };
-            grid[c][r] = num;
-            row[r] = num;
-            rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
-        }
-        rprint!("       │");
-
-        rprintln!("");
-    }
-
-    for i in 5..7 {
-        rprintln!("\r{}", MICROBIT[i]);
-    }
+    grid = generate_grid(&grid, rng);
 
     loop {
         life(&mut grid);
 
-        let button_state = button_a.is_low().unwrap();
-        if button_state == true {
+        let button_a_pressed = button_a.is_low().unwrap();
+        let button_a_pressed = button_a.is_low().unwrap();
+
+        if button_a_pressed == true {
             rprintln!("Low");
             timer1.delay_ms(1000 / FPS);
         } else {
