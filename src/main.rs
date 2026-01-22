@@ -35,8 +35,8 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(&mut self) {
-        self.grid = [[0; 5]; 5];
+    fn new() -> Self {
+        Self { grid: [[0; 5]; 5] }
     }
     fn generate_grid(&mut self, mut rng: Rng) {
         // Display first 3 lines of the microbit in the terminal
@@ -80,13 +80,13 @@ fn main() -> ! {
     let mut button_b = board.buttons.button_b.into_pullup_input();
 
     rprintln!("");
-    grid = generate_grid(&grid, rng);
+    grid.generate_grid(rng);
 
     loop {
-        life(&mut grid);
+        life(&mut grid.grid);
 
         let button_a_pressed = button_a.is_low().unwrap();
-        let button_a_pressed = button_a.is_low().unwrap();
+        let button_b_pressed = button_b.is_low().unwrap();
 
         if button_a_pressed == true {
             rprintln!("Low");
@@ -94,6 +94,6 @@ fn main() -> ! {
         } else {
         }
 
-        display.show(&mut timer1, grid, 1000 / FPS);
+        display.show(&mut timer1, grid.grid, 1000 / FPS);
     }
 }
