@@ -15,7 +15,7 @@ use microbit::{
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
-const USING_STALL: bool = cfg!(feature = "stall_detection");
+const USING_STALL: bool = cfg!(feature = "detect_stall");
 
 // Wether or not to display the text microbit
 const PRINT_MICROBIT: bool = cfg!(feature = "print_microbit");
@@ -185,8 +185,12 @@ fn main() -> ! {
                     }
                     // Run life proceedure on grid
                     life(&mut grid.grid);
-                    // When done state has lasted 5 frames or stalled for 7 frames randomize the board
-                    if (stall_frame_count > 7 && USING_STALL)
+                    // When:
+                    //      done state has lasted 5 frames
+                    //     or ( with detect stall enabled )
+                    //      stalled for 5 frames and 2 seconds extra
+                    // randomize the board
+                    if (stall_frame_count > (5 + (FPS * 2)) && USING_STALL)
                         || (done(&grid.grid) && stall_frame_count > 5)
                     {
                         GameState::Randomize
@@ -194,17 +198,7 @@ fn main() -> ! {
                         GameState::Running
                     }
                 }
-            } // GameState::Done => {
-              //     // When done state has lasted 5 frames randomize the board
-              //     if done_frame_count > 5 {
-              //         done_frame_count = 1;
-              //         GameState::Randomize
-              //     } else {
-              //         rprint!("{}", done_frame_count);
-              //         done_frame_count += 1;
-              //         GameState::Running
-              //     }
-              // }
+            }
         };
 
         // Display the grid

@@ -2,8 +2,8 @@
 Game of Life on the Micro:Bit V2
 
 ### Features:
-  + stall_detection
-  + print_microbit
+  + detect_stall : Detect stalls and randomize after 5 frames and 2 seconds 
+  + print_microbit : Print ASCII microbit with starting state
 
 ### Assignment: **Life**
 #### - _Tim Pup_
