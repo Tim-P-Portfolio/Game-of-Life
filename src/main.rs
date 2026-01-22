@@ -39,6 +39,14 @@ impl Grid {
         Self { grid: [[0; 5]; 5] }
     }
 
+    fn complement(&mut self) {
+        for r in 0..5 {
+            for c in 0..5 {
+                self.grid[r][c] = 1 - self.grid[r][c]
+            }
+        }
+    }
+
     fn generate_grid(&mut self, rng: &mut Rng) {
         // Display first 3 lines of the microbit in the terminal
         for i in 0..4 {
@@ -70,6 +78,7 @@ enum GameState {
     ButtonBPressed,
     Randomize,
     Running,
+    Complement,
 }
 
 #[entry]
@@ -100,15 +109,18 @@ fn main() -> ! {
         state = match state {
             GameState::ButtonAPressed => {
                 rprintln!("A low");
-
                 GameState::Randomize
             }
             GameState::ButtonBPressed => {
                 rprintln!("Low");
-                GameState::Running
+                GameState::Complement
             }
             GameState::Randomize => {
                 grid.generate_grid(&mut rng);
+                GameState::Running
+            }
+            GameState::Complement => {
+                grid.complement();
                 GameState::Running
             }
             GameState::Running => {
