@@ -38,7 +38,8 @@ impl Grid {
     fn new() -> Self {
         Self { grid: [[0; 5]; 5] }
     }
-    fn generate_grid(&mut self, mut rng: Rng) {
+
+    fn generate_grid(&mut self, rng: &mut Rng) {
         // Display first 3 lines of the microbit in the terminal
         for i in 0..4 {
             rprintln!("\r{}", MICROBIT[i]);
@@ -64,6 +65,13 @@ impl Grid {
     }
 }
 
+enum GameState {
+    ButtonAPressed,
+    ButtonBPressed,
+    Randomize,
+    Running,
+}
+
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
@@ -80,13 +88,41 @@ fn main() -> ! {
     let mut button_b = board.buttons.button_b.into_pullup_input();
 
     rprintln!("");
-    grid.generate_grid(rng);
+    grid.generate_grid(&mut rng);
+
+    let mut state = GameState::Randomize;
 
     loop {
-        life(&mut grid.grid);
-
+        // Get buttonGameState
         let button_a_pressed = button_a.is_low().unwrap();
         let button_b_pressed = button_b.is_low().unwrap();
+
+        state = match state {
+            GameState::ButtonAPressed => {
+                rprintln!("A low");
+
+                GameState::Randomize
+            }
+            GameState::ButtonBPressed => {
+                rprintln!("Low");
+                GameState::Running
+            }
+            GameState::Randomize => {
+                grid.generate_grid(&mut rng);
+                GameState::Running
+            }
+            GameState::Running => {
+                life(&mut grid.grid);
+
+                if button_a_pressed {
+                    GameState::ButtonAPressed
+                } else if button_b_pressed {
+                    GameState::ButtonBPressed
+                } else {
+                    GameState::Running
+                }
+            }
+        };
 
         if button_a_pressed == true {
             rprintln!("Low");
