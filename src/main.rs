@@ -2,6 +2,8 @@
 #![no_std]
 
 mod life;
+use core::ops::Index;
+
 use life::*;
 
 use embedded_hal::digital::InputPin;
@@ -101,6 +103,44 @@ impl Grid {
     }
 }
 
+const BUFFER_SIZE: usize = 3;
+
+/*
+ * Grid Buffer
+ *
+ * grids: list of grids
+ * top: most recent grid
+ *
+ * Insert new grid at top+1
+ * Set top to new grid
+ */
+struct GridBuffer {
+    grids: [Grid; BUFFER_SIZE],
+    top: usize,
+    repeat: u8,
+}
+impl GridBuffer {
+    fn new() -> Self {
+        Self {
+            grids: [Grid::new(); BUFFER_SIZE],
+            top: 0,
+            repeat: 0,
+        }
+    }
+    fn set(&mut self, grid: Grid) {
+        // if grid new = grid top+1 set repeat counter else reset repeat
+        // if repeat counter > Buffer size return T/F
+
+        self.top = if self.top < BUFFER_SIZE {
+            self.top + 1
+        } else {
+            0
+        };
+
+        self.grids[self.top] = grid;
+    }
+}
+
 // State of the game
 enum GameState {
     ButtonAPressed,
@@ -130,8 +170,8 @@ fn main() -> ! {
     // Initialize a grid
     let mut grid = Grid::new();
     // Grid to check for stall
-    // let mut past_grids = [Grid::new(); 3];
-    let mut past_grid = Grid::new();
+    let mut past_grids = GridBuffer::new();
+    // let mut past_grid = Grid::new();
 
     // Set buttons as input in pullup state
     let mut button_a = board.buttons.button_a.into_pullup_input();
@@ -177,11 +217,13 @@ fn main() -> ! {
                 // } else if done(&grid.grid) {
                 //     GameState::Done
                 } else {
-                    if past_grid.grid == grid.grid {
-                        stall_frame_count += 1
-                    } else {
-                        past_grid.set(grid.grid);
-                        stall_frame_count = 1
+                    if USING_STALL {
+                        if past_grids.grids[0].grid == grid.grid {
+                            stall_frame_count += 1
+                        } else {
+                            past_grids.grids[0].set(grid.grid);
+                            stall_frame_count = 1
+                        }
                     }
                     // Run life proceedure on grid
                     life(&mut grid.grid);
