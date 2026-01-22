@@ -4,7 +4,6 @@
 mod life;
 use life::*;
 
-use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::InputPin;
 
 use cortex_m_rt::entry;
@@ -16,7 +15,8 @@ use microbit::{
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
-const PRINT_MICROBIT: bool = false;
+// Wether or not to display the text microbit
+const PRINT_MICROBIT: bool = true;
 const MICROBIT: [&str; 7] = [
     // Top
     "╭───────────────────────╮",
@@ -31,15 +31,18 @@ const MICROBIT: [&str; 7] = [
 
 const FPS: u32 = 10;
 
+// Grid for setting the state of the display leds
 struct Grid {
     grid: [[u8; 5]; 5],
 }
 
 impl Grid {
     fn new() -> Self {
+        // Initialize 5x5 grid with zeros
         Self { grid: [[0; 5]; 5] }
     }
 
+    // Flip all grid states
     fn complement(&mut self) {
         for r in 0..5 {
             for c in 0..5 {
@@ -48,26 +51,38 @@ impl Grid {
         }
     }
 
-    fn generate_grid(&mut self, rng: &mut Rng) {
-        // Display first 3 lines of the microbit in the terminal
+    fn set(&mut self, grid: [[u8; 5]; 5]) {
+        for r in 0..5 {
+            for c in 0..5 {
+                self.grid[r][c] = grid[r][c]
+            }
+        }
+    }
+
+    fn generate_random_grid(&mut self, rng: &mut Rng) {
+        // Display first 3 lines of the text based microbit in the terminal
         if PRINT_MICROBIT {
             for i in 0..4 {
                 rprintln!("\r{}", MICROBIT[i]);
             }
         }
-
+        // Loop through grid cells
         for c in 0..5 {
+            // Print edge and spacing for microbit
             if PRINT_MICROBIT {
                 rprint!("\r│      ")
             }
             for r in 0..5 {
-                // 0-127: 0, 128-255: 1
+                // Set led state to random value, 0-127: 0, 128-255: 1
                 let num = if rng.random_u8() > 127 { 1 } else { 0 };
+                // Set microbit
                 self.grid[c][r] = num;
+                // Print text version of starting state of leds
                 if PRINT_MICROBIT {
                     rprint!("{}", if num == 1 { " ▮" } else { " ▯" })
                 }
             }
+            // Print edge and spacing for microbit
             if PRINT_MICROBIT {
                 rprint!("       │\n");
             }
@@ -82,6 +97,7 @@ impl Grid {
     }
 }
 
+// State of the game
 enum GameState {
     ButtonAPressed,
     ButtonBPressed,
@@ -95,29 +111,41 @@ enum GameState {
 fn main() -> ! {
     rtt_init_print!();
 
+    // Setup microbit board
     let board = Board::take().unwrap();
+
+    // Setup timer
     let mut timer1 = Timer::new(board.TIMER1);
 
+    // Setup microbit display
     let mut display = Display::new(board.display_pins);
+
+    // Setup hardware RNG
     let mut rng = Rng::new(board.RNG);
 
+    // Initialize a grid
     let mut grid = Grid::new();
+    // Grid to check for stall
+    let mut past_grid = Grid::new();
 
+    // Set buttons as input in pullup state
     let mut button_a = board.buttons.button_a.into_pullup_input();
     let mut button_b = board.buttons.button_b.into_pullup_input();
 
-    rprintln!("");
-
+    // Initialize the counters
     let mut b_btn_frame_count = 5;
+    let mut stall_frame_count = 5;
     let mut done_frame_count = 1;
 
+    // Initialize state to start as random grid
     let mut state = GameState::Randomize;
 
     loop {
-        // Get buttonGameState
+        // Get button states
         let button_a_pressed = button_a.is_low().unwrap();
         let button_b_pressed = button_b.is_low().unwrap();
 
+        // Match state to operations
         state = match state {
             GameState::ButtonAPressed => GameState::Randomize,
             GameState::ButtonBPressed => {
@@ -129,7 +157,7 @@ fn main() -> ! {
                 }
             }
             GameState::Randomize => {
-                grid.generate_grid(&mut rng);
+                grid.generate_random_grid(&mut rng);
                 GameState::Running
             }
             GameState::Complement => {
@@ -137,16 +165,25 @@ fn main() -> ! {
                 GameState::Running
             }
             GameState::Running => {
-                life(&mut grid.grid);
-
                 if button_a_pressed {
                     GameState::ButtonAPressed
                 } else if button_b_pressed {
                     GameState::ButtonBPressed
-                } else if done(&grid.grid) {
-                    GameState::Done
+                // } else if done(&grid.grid) {
+                //     GameState::Done
                 } else {
-                    GameState::Running
+                    if past_grid.grid == grid.grid {
+                        stall_frame_count += 1
+                    } else {
+                        past_grid.set(grid.grid);
+                        stall_frame_count = 1
+                    }
+                    life(&mut grid.grid);
+                    if stall_frame_count > 5 {
+                        GameState::Randomize
+                    } else {
+                        GameState::Running
+                    }
                 }
             }
             GameState::Done => {
