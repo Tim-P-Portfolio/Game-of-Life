@@ -15,8 +15,11 @@ use microbit::{
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
+const USING_STALL: bool = cfg!(feature = "stall_detection");
+
 // Wether or not to display the text microbit
-const PRINT_MICROBIT: bool = true;
+const PRINT_MICROBIT: bool = cfg!(feature = "print_microbit");
+
 const MICROBIT: [&str; 7] = [
     // Top
     "╭───────────────────────╮",
@@ -32,6 +35,7 @@ const MICROBIT: [&str; 7] = [
 const FPS: u32 = 10;
 
 // Grid for setting the state of the display leds
+#[derive(Copy, Clone)]
 struct Grid {
     grid: [[u8; 5]; 5],
 }
@@ -126,6 +130,7 @@ fn main() -> ! {
     // Initialize a grid
     let mut grid = Grid::new();
     // Grid to check for stall
+    // let mut past_grids = [Grid::new(); 3];
     let mut past_grid = Grid::new();
 
     // Set buttons as input in pullup state
@@ -180,8 +185,10 @@ fn main() -> ! {
                     }
                     // Run life proceedure on grid
                     life(&mut grid.grid);
-                    // When done state has lasted 5 frames randomize the board
-                    if stall_frame_count > 5 {
+                    // When done state has lasted 5 frames or stalled for 7 frames randomize the board
+                    if (stall_frame_count > 7 && USING_STALL)
+                        || (done(&grid.grid) && stall_frame_count > 5)
+                    {
                         GameState::Randomize
                     } else {
                         GameState::Running
