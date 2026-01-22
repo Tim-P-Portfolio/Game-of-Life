@@ -104,7 +104,7 @@ enum GameState {
     Randomize,
     Running,
     Complement,
-    Done,
+    // Done,
 }
 
 #[entry]
@@ -135,7 +135,7 @@ fn main() -> ! {
     // Initialize the counters
     let mut b_btn_frame_count = 5;
     let mut stall_frame_count = 5;
-    let mut done_frame_count = 1;
+    // let mut done_frame_count = 1;
 
     // Initialize state to start as random grid
     let mut state = GameState::Randomize;
@@ -178,28 +178,32 @@ fn main() -> ! {
                         past_grid.set(grid.grid);
                         stall_frame_count = 1
                     }
+                    // Run life proceedure on grid
                     life(&mut grid.grid);
+                    // When done state has lasted 5 frames randomize the board
                     if stall_frame_count > 5 {
                         GameState::Randomize
                     } else {
                         GameState::Running
                     }
                 }
-            }
-            GameState::Done => {
-                if done_frame_count > 5 {
-                    done_frame_count = 1;
-                    GameState::Randomize
-                } else {
-                    rprint!("{}", done_frame_count);
-                    done_frame_count += 1;
-                    GameState::Running
-                }
-            }
+            } // GameState::Done => {
+              //     // When done state has lasted 5 frames randomize the board
+              //     if done_frame_count > 5 {
+              //         done_frame_count = 1;
+              //         GameState::Randomize
+              //     } else {
+              //         rprint!("{}", done_frame_count);
+              //         done_frame_count += 1;
+              //         GameState::Running
+              //     }
+              // }
         };
 
+        // Display the grid
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 
+        // Increment B button timeout
         if b_btn_frame_count < 5 {
             b_btn_frame_count += 1
         }
