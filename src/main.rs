@@ -16,6 +16,7 @@ use microbit::{
 use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
+const PRINT_MICROBIT: bool = false;
 const MICROBIT: [&str; 7] = [
     // Top
     "╭───────────────────────╮",
@@ -49,26 +50,34 @@ impl Grid {
 
     fn generate_grid(&mut self, rng: &mut Rng) {
         // Display first 3 lines of the microbit in the terminal
-        for i in 0..4 {
-            rprintln!("\r{}", MICROBIT[i]);
+        if PRINT_MICROBIT {
+            for i in 0..4 {
+                rprintln!("\r{}", MICROBIT[i]);
+            }
         }
 
         for c in 0..5 {
-            rprint!("\r│      ");
+            if PRINT_MICROBIT {
+                rprint!("\r│      ")
+            }
             for r in 0..5 {
                 // 0-127: 0, 128-255: 1
                 let num = if rng.random_u8() > 127 { 1 } else { 0 };
                 self.grid[c][r] = num;
-                rprint!("{}", if num == 1 { " ▮" } else { " ▯" });
+                if PRINT_MICROBIT {
+                    rprint!("{}", if num == 1 { " ▮" } else { " ▯" })
+                }
             }
-            rprint!("       │");
-
-            rprintln!("");
+            if PRINT_MICROBIT {
+                rprint!("       │\n");
+            }
         }
 
         // Display last 3 lines of the microbit in the terminal
-        for i in 5..7 {
-            rprintln!("\r{}", MICROBIT[i]);
+        if PRINT_MICROBIT {
+            for i in 5..7 {
+                rprintln!("\r{}", MICROBIT[i]);
+            }
         }
     }
 }
@@ -79,6 +88,7 @@ enum GameState {
     Randomize,
     Running,
     Complement,
+    Done,
 }
 
 #[entry]
@@ -99,6 +109,7 @@ fn main() -> ! {
     rprintln!("");
 
     let mut b_btn_frame_count = 5;
+    let mut done_frame_count = 1;
 
     let mut state = GameState::Randomize;
 
@@ -113,7 +124,7 @@ fn main() -> ! {
                 if b_btn_frame_count < 5 {
                     GameState::Running
                 } else {
-                    b_btn_frame_count = 0;
+                    b_btn_frame_count = 1;
                     GameState::Complement
                 }
             }
@@ -132,7 +143,19 @@ fn main() -> ! {
                     GameState::ButtonAPressed
                 } else if button_b_pressed {
                     GameState::ButtonBPressed
+                } else if done(&grid.grid) {
+                    GameState::Done
                 } else {
+                    GameState::Running
+                }
+            }
+            GameState::Done => {
+                if done_frame_count > 5 {
+                    done_frame_count = 1;
+                    GameState::Randomize
+                } else {
+                    rprint!("{}", done_frame_count);
+                    done_frame_count += 1;
                     GameState::Running
                 }
             }
@@ -140,6 +163,8 @@ fn main() -> ! {
 
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 
-        b_btn_frame_count += 1;
+        if b_btn_frame_count < 5 {
+            b_btn_frame_count += 1
+        }
     }
 }
