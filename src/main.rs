@@ -97,7 +97,8 @@ fn main() -> ! {
     let mut button_b = board.buttons.button_b.into_pullup_input();
 
     rprintln!("");
-    grid.generate_grid(&mut rng);
+
+    let mut b_btn_frame_count = 5;
 
     let mut state = GameState::Randomize;
 
@@ -107,13 +108,14 @@ fn main() -> ! {
         let button_b_pressed = button_b.is_low().unwrap();
 
         state = match state {
-            GameState::ButtonAPressed => {
-                rprintln!("A low");
-                GameState::Randomize
-            }
+            GameState::ButtonAPressed => GameState::Randomize,
             GameState::ButtonBPressed => {
-                rprintln!("Low");
-                GameState::Complement
+                if b_btn_frame_count < 5 {
+                    GameState::Running
+                } else {
+                    b_btn_frame_count = 0;
+                    GameState::Complement
+                }
             }
             GameState::Randomize => {
                 grid.generate_grid(&mut rng);
@@ -136,12 +138,8 @@ fn main() -> ! {
             }
         };
 
-        if button_a_pressed == true {
-            rprintln!("Low");
-            timer1.delay_ms(1000 / FPS);
-        } else {
-        }
-
         display.show(&mut timer1, grid.grid, 1000 / FPS);
+
+        b_btn_frame_count += 1;
     }
 }
