@@ -64,6 +64,8 @@ fn main() -> ! {
     // Initialize state to start as random grid
     let mut state = GameState::Randomize;
 
+    let stall_frame_count = 0;
+
     loop {
         // Get button states
         let button_a_pressed = button_a.is_low().unwrap();
@@ -98,6 +100,7 @@ fn main() -> ! {
                 } else {
                     if USING_STALL {
                         past_grids.set(grid);
+                        rprintln!("{}", past_grids.repeat);
                     }
                     // Run life proceedure on grid
                     life(&mut grid.grid);
@@ -106,7 +109,8 @@ fn main() -> ! {
                     //     or ( with detect stall enabled )
                     //      stalled for 5 frames and 2 seconds extra
                     // randomize the board
-                    if (stall_frame_count > (5 + (FPS * 2)) && USING_STALL)
+
+                    if (past_grids.repeat > 3 && USING_STALL)
                         || (done(&grid.grid) && stall_frame_count > 5)
                     {
                         GameState::Randomize
