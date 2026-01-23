@@ -88,7 +88,8 @@ impl Grid {
     }
 }
 
-const BUFFER_SIZE: usize = 3;
+const MIN_UNIQUE: usize = 4;
+const BUFFER_SIZE: usize = (MIN_UNIQUE - 1) * 2;
 
 /*
  * Grid Buffer
@@ -114,12 +115,28 @@ impl GridBuffer {
     }
 
     pub fn repeating(&self) -> bool {
-        if self.repeat >= BUFFER_SIZE - 1usize {
-            true
-        } else {
-            false
+        match self.top {
+            0..1 => false,
+            d if d % 2 == 0 => {
+                let unique_len = self.top / 2;
+                let mut repeated = true;
+                let length: usize = self.top;
+                for i in 0..length {
+                    let l = i;
+                    let r = length - i;
+                    rprintln!("{}{}", l, r);
+                    if self.grids[l].grid != self.grids[r].grid {
+                        repeated = false;
+                        break;
+                    }
+                }
+                repeated
+            }
+            _ => false,
         }
     }
+
+    fn clear() {}
 
     pub fn set(&mut self, grid: Grid) {
         // This doesn't work at all
@@ -129,11 +146,22 @@ impl GridBuffer {
         // Never same twice in a row
         // Never streak of < 4 looping
         //
-        // 1: 00, 00 = x ==> if last == current
-        // 2: 01, 00, 01 = x ==> if 3rd == first
-        // 3: 00, 01, 10, 00, 01, 10 =x ==> if 4th == 1st && 5th == 2st && 6th == 3rd <- should work for all
+        // Repeats:
+        // 1: 00, 00 ==> if last == current
+        // 2: 01, 00, 01 ==> if 3rd == first
+        // 3: 00, 01, 10, 00, 01, 10 ==> if 4th == 1st && 5th == 2st && 6th == 3rd <- should work for all
         //
         // 1st = last
+        //
+        // 3:   0..3                                     4..6
+        // grid[0..max_repeat_len] = grid[max_repeat_len+1..len]
+        //
+        // 1: 2
+        // 2: 4
+        // 3: 6
+        // : 2n
+        //
+        // Buffer len will always be even
 
         // Set top to top + 1 wrapping back to 0
         self.top = if self.top + 1 < BUFFER_SIZE {
@@ -141,13 +169,6 @@ impl GridBuffer {
         } else {
             0
         };
-
-        // Check if top buffer grid is equal to new grid, increment repeat count
-        if grid.grid == self.grids[self.top].grid {
-            self.repeat += 1
-        } else {
-            self.repeat = 0
-        }
 
         // Add new grid to buffer
         self.grids[self.top].set(grid.grid);

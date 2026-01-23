@@ -7,7 +7,6 @@ use grid::*;
 mod life;
 use life::*;
 
-use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::InputPin;
 
 use cortex_m_rt::entry;
@@ -17,12 +16,13 @@ use microbit::{
     hal::{rng::Rng, timer::Timer},
 };
 use panic_halt as _;
-use rtt_target::{rprint, rprintln, rtt_init_print};
+use rtt_target::{rprintln as print, rtt_init_print};
 
 const USING_STALL: bool = cfg!(feature = "detect_stall");
 const STALL_DELAY_SECONDS: u8 = 2;
 
 const FPS: u32 = 10;
+const STALL_DELAY_FRAMES: u8 = STALL_DELAY_SECONDS * FPS as u8;
 
 // State of the game
 enum GameState {
@@ -115,7 +115,7 @@ fn main() -> ! {
                     if USING_STALL {
                         past_grids.set(grid);
                         if past_grids.repeating() {
-                            rprintln!("repeated");
+                            print!("repeated");
                             GameState::Repeating { delay: 0 }
                         } else {
                             GameState::Running
@@ -125,11 +125,12 @@ fn main() -> ! {
                     }
                 }
             }
-
-            GameState::Repeating { delay: d @ 2.. } => GameState::Randomize,
-            GameState::Repeating { delay: d @ 0..2 } => {
-                rprintln!("waiting");
-                timer1.delay_ms(1000 * STALL_DELAY_SECONDS as u32);
+            GameState::Repeating { delay: d } if d >= STALL_DELAY_FRAMES => {
+                stall_frame_count = 0;
+                GameState::Randomize
+            }
+            GameState::Repeating { delay: d @ _ } => {
+                print!("waiting");
                 GameState::Repeating { delay: d + 1 }
             }
         };
@@ -143,15 +144,3 @@ fn main() -> ! {
         }
     }
 }
-
-// #[cfg(test)]
-// mod testing {
-
-//     const grid_empty: [[u8; 5]; 5] = [[0; 5]; 5];
-
-//     #[test]
-//     fn test1() {
-//         let grid = Grid::new();
-//         assert_eq!(grid, grid_empty);
-//     }
-// }
