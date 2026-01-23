@@ -29,7 +29,7 @@ enum GameState {
     Randomize,
     Running,
     Complement,
-    // Done,
+    Done,
 }
 
 #[entry]
@@ -64,7 +64,7 @@ fn main() -> ! {
     // Initialize state to start as random grid
     let mut state = GameState::Randomize;
 
-    let stall_frame_count = 0;
+    let mut stall_frame_count = 1;
 
     loop {
         // Get button states
@@ -83,44 +83,49 @@ fn main() -> ! {
                 }
             }
             GameState::Randomize => {
+                rprintln!("Rand");
                 grid.generate_random_grid(&mut rng);
+
+                rprintln!("Rand");
                 GameState::Running
             }
             GameState::Complement => {
                 grid.complement();
                 GameState::Running
             }
+            GameState::Done => {
+                rprintln!("Done");
+                stall_frame_count += 1;
+                if stall_frame_count > 5 {
+                    stall_frame_count = 0;
+                    GameState::Randomize
+                } else {
+                    GameState::Done
+                }
+            }
             GameState::Running => {
+                rprintln!("Running real");
                 if button_a_pressed {
+                    rprintln!("Button A");
                     GameState::ButtonAPressed
                 } else if button_b_pressed {
                     GameState::ButtonBPressed
-                // } else if done(&grid.grid) {
-                //     GameState::Done
+                } else if done(&grid.grid) {
+                    GameState::Done
                 } else {
+                    rprintln!("Running real 3");
                     if USING_STALL {
                         past_grids.set(grid);
                         rprintln!("{}", past_grids.repeat);
                     }
-                    // Run life proceedure on grid
-                    life(&mut grid.grid);
-                    // When:
-                    //      done state has lasted 5 frames
-                    //     or ( with detect stall enabled )
-                    //      stalled for 5 frames and 2 seconds extra
-                    // randomize the board
 
-                    if (past_grids.repeat > 3 && USING_STALL)
-                        || (done(&grid.grid) && stall_frame_count > 5)
-                    {
-                        GameState::Randomize
-                    } else {
-                        GameState::Running
-                    }
+                    life(&mut grid.grid);
+                    GameState::Running
                 }
             }
         };
 
+        rprintln!("Running {:?}", done(&mut grid.grid));
         // Display the grid
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 

@@ -134,6 +134,6 @@ impl GridBuffer {
             0
         };
 
-        self.grids[self.top] = grid;
+        self.grids[self.top].set(grid.grid);
     }
 }
