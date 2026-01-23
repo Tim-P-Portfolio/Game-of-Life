@@ -34,3 +34,9 @@ Cool thing with match statements
   GameState::Repeating { delay: d @ 2 } => GameState::Randomize,
   GameState::Repeating { delay: d @ 0..2 } => GameState::Repeating { delay: d + 1 },
 ```
+
+
+
+
+Sources:
+  Testing: https://doc.rust-lang.org/book/ch11-01-writing-tests.html

@@ -143,3 +143,15 @@ fn main() -> ! {
         }
     }
 }
+
+#[cfg(test)]
+mod testing {
+
+    const grid_empty: [[u8; 5]; 5] = [[0; 5]; 5];
+
+    #[test]
+    fn test1() {
+        let grid = Grid::new();
+        assert_eq!(grid, grid_empty);
+    }
+}

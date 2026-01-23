@@ -88,7 +88,7 @@ impl Grid {
     }
 }
 
-const BUFFER_SIZE: usize = 3;
+const BUFFER_SIZE: usize = 2;
 
 /*
  * Grid Buffer
