@@ -88,7 +88,7 @@ impl Grid {
     }
 }
 
-const BUFFER_SIZE: usize = 2;
+const BUFFER_SIZE: usize = 3;
 
 /*
  * Grid Buffer
@@ -122,18 +122,32 @@ impl GridBuffer {
     }
 
     pub fn set(&mut self, grid: Grid) {
+        // This doesn't work at all
+        // Need keep track
+        //
+        // Rules:
+        // Never same twice in a row
+        // Never streak of < 4 looping
+        //
+        // 1: 00, 00, 00
+        // 2: 01, 00, 01
+        // 3: 00, 01, 00, 00, 01, 00
+
+        // Set top to top + 1 wrapping back to 0
         self.top = if self.top + 1 < BUFFER_SIZE {
             self.top + 1
         } else {
             0
         };
 
+        // Check if top buffer grid is equal to new grid, increment repeat count
         if grid.grid == self.grids[self.top].grid {
             self.repeat += 1
         } else {
             self.repeat = 0
         }
 
+        // Add new grid to buffer
         self.grids[self.top].set(grid.grid);
     }
 }

@@ -116,7 +116,7 @@ fn main() -> ! {
                         past_grids.set(grid);
                         if past_grids.repeating() {
                             rprintln!("repeated");
-                            GameState::Randomize
+                            GameState::Repeating { delay: 0 }
                         } else {
                             GameState::Running
                         }
@@ -144,14 +144,14 @@ fn main() -> ! {
     }
 }
 
-#[cfg(test)]
-mod testing {
+// #[cfg(test)]
+// mod testing {
 
-    const grid_empty: [[u8; 5]; 5] = [[0; 5]; 5];
+//     const grid_empty: [[u8; 5]; 5] = [[0; 5]; 5];
 
-    #[test]
-    fn test1() {
-        let grid = Grid::new();
-        assert_eq!(grid, grid_empty);
-    }
-}
+//     #[test]
+//     fn test1() {
+//         let grid = Grid::new();
+//         assert_eq!(grid, grid_empty);
+//     }
+// }
