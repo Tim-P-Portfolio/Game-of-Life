@@ -26,3 +26,11 @@ Rather than having a done condition I chose to implement a stall condition. The 
 Problems incountered:
   + Initally for the random access I attempted to use the pariferial directly through the pac crate. This was difficult and did not end up working. I switched to using the HAL for access to the hardware random. This was much simpler to work with.
   + A fair bit of my time working on this project was spent on learing how to deal with strings without the use of the standard library. While completely unnececary
+
+  
+  
+Cool thing with match statements
+``` Rust
+  GameState::Repeating { delay: d @ 2 } => GameState::Randomize,
+  GameState::Repeating { delay: d @ 0..2 } => GameState::Repeating { delay: d + 1 },
+```

@@ -7,6 +7,7 @@ use grid::*;
 mod life;
 use life::*;
 
+use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::InputPin;
 
 use cortex_m_rt::entry;
@@ -19,6 +20,7 @@ use panic_halt as _;
 use rtt_target::{rprint, rprintln, rtt_init_print};
 
 const USING_STALL: bool = cfg!(feature = "detect_stall");
+const STALL_DELAY_SECONDS: u8 = 2;
 
 const FPS: u32 = 10;
 
@@ -30,6 +32,7 @@ enum GameState {
     Running,
     Complement,
     Done,
+    Repeating { delay: u8 },
 }
 
 #[entry]
@@ -83,10 +86,8 @@ fn main() -> ! {
                 }
             }
             GameState::Randomize => {
-                rprintln!("Rand");
                 grid.generate_random_grid(&mut rng);
 
-                rprintln!("Rand");
                 GameState::Running
             }
             GameState::Complement => {
@@ -94,7 +95,6 @@ fn main() -> ! {
                 GameState::Running
             }
             GameState::Done => {
-                rprintln!("Done");
                 stall_frame_count += 1;
                 if stall_frame_count > 5 {
                     stall_frame_count = 0;
@@ -104,28 +104,36 @@ fn main() -> ! {
                 }
             }
             GameState::Running => {
-                rprintln!("Running real");
                 if button_a_pressed {
-                    rprintln!("Button A");
                     GameState::ButtonAPressed
                 } else if button_b_pressed {
                     GameState::ButtonBPressed
                 } else if done(&grid.grid) {
                     GameState::Done
                 } else {
-                    rprintln!("Running real 3");
+                    life(&mut grid.grid);
                     if USING_STALL {
                         past_grids.set(grid);
-                        rprintln!("{}", past_grids.repeat);
+                        if past_grids.repeating() {
+                            rprintln!("repeated");
+                            GameState::Randomize
+                        } else {
+                            GameState::Running
+                        }
+                    } else {
+                        GameState::Running
                     }
-
-                    life(&mut grid.grid);
-                    GameState::Running
                 }
+            }
+
+            GameState::Repeating { delay: d @ 2.. } => GameState::Randomize,
+            GameState::Repeating { delay: d @ 0..2 } => {
+                rprintln!("waiting");
+                timer1.delay_ms(1000 * STALL_DELAY_SECONDS as u32);
+                GameState::Repeating { delay: d + 1 }
             }
         };
 
-        rprintln!("Running {:?}", done(&mut grid.grid));
         // Display the grid
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 

@@ -102,7 +102,7 @@ const BUFFER_SIZE: usize = 3;
 pub struct GridBuffer {
     pub grids: [Grid; BUFFER_SIZE],
     pub top: usize,
-    pub repeat: u8,
+    pub repeat: usize,
 }
 impl GridBuffer {
     pub fn new() -> Self {
@@ -112,27 +112,27 @@ impl GridBuffer {
             repeat: 0,
         }
     }
-    pub fn set(&mut self, grid: Grid) {
-        // if grid new = grid top+1 set repeat counter else reset repeat
-        // if repeat counter > Buffer size return T/F
 
-        let grid_next = self.grids[if self.top + 1 > BUFFER_SIZE {
-            0
+    pub fn repeating(&self) -> bool {
+        if self.repeat >= BUFFER_SIZE - 1usize {
+            true
         } else {
-            self.top + 1
-        }];
-
-        if grid.grid == grid_next.grid {
-            self.repeat += 1
-        } else {
-            self.repeat = 0
+            false
         }
+    }
 
-        self.top = if self.top < BUFFER_SIZE {
+    pub fn set(&mut self, grid: Grid) {
+        self.top = if self.top + 1 < BUFFER_SIZE {
             self.top + 1
         } else {
             0
         };
+
+        if grid.grid == self.grids[self.top].grid {
+            self.repeat += 1
+        } else {
+            self.repeat = 0
+        }
 
         self.grids[self.top].set(grid.grid);
     }
