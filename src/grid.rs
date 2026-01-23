@@ -129,9 +129,11 @@ impl GridBuffer {
         // Never same twice in a row
         // Never streak of < 4 looping
         //
-        // 1: 00, 00, 00
-        // 2: 01, 00, 01
-        // 3: 00, 01, 00, 00, 01, 00
+        // 1: 00, 00 = x ==> if last == current
+        // 2: 01, 00, 01 = x ==> if 3rd == first
+        // 3: 00, 01, 10, 00, 01, 10 =x ==> if 4th == 1st && 5th == 2st && 6th == 3rd <- should work for all
+        //
+        // 1st = last
 
         // Set top to top + 1 wrapping back to 0
         self.top = if self.top + 1 < BUFFER_SIZE {
