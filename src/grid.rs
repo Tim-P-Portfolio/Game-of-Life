@@ -105,82 +105,53 @@ const BUFFER_SIZE: usize = (MIN_UNIQUE - 1) * 2;
 pub struct GridBuffer {
     pub grids: [Grid; BUFFER_SIZE],
     pub top: usize,
+    pub stalled: bool,
 }
 impl GridBuffer {
     pub fn new() -> Self {
         Self {
             grids: [Grid::new(); BUFFER_SIZE],
             top: 0,
+            stalled: false,
         }
     }
 
-    pub fn repeating(&self) -> bool {
+    pub fn repeating(&mut self) -> bool {
         match self.top {
-            0 => false,
+            0 => {
+                self.stalled = false;
+                self.stalled
+            }
             d if d % 2 == 0 => {
-                let unique_len = self.top / 2;
-                let mut repeated = true;
+                self.stalled = true;
                 let length: usize = self.top;
                 for i in 0..length {
                     let l = i;
                     let r = length - i;
-                    rprintln!("{}{}", l, r);
                     if self.grids[l].grid != self.grids[r].grid {
-                        repeated = false;
-                        rprintln!("Broken");
+                        self.stalled = false;
                         break;
                     }
                 }
-                repeated
+                if self.stalled {
+                    self.top = 0
+                }
+                self.stalled
             }
-            _ => false,
+            _ => {
+                self.stalled = false;
+                self.stalled
+            }
         }
     }
 
     fn clear() {}
 
     pub fn set(&mut self, grid: Grid) {
-        // This doesn't work at all
-        // Need keep track
-        //
-        // Rules:
-        // Never same twice in a row
-        // Never streak of < 4 looping
-        //
-        // Repeats:
-        // 1: 00, 00 ==> if last == current
-        // 2: 01, 00, 01 ==> if 3rd == first
-        // 3: 00, 01, 10, 00, 01, 10 ==> if 4th == 1st && 5th == 2st && 6th == 3rd <- should work for all
-        //
-        // 1st = last
-        //
-        // 3:   0..3                                     4..6
-        // grid[0..max_repeat_len] = grid[max_repeat_len+1..len]
-        //
-        // 1: 2
-        // 2: 4
-        // 3: 6
-        // : 2n
-        //
-        // Buffer len will always be even
-
-        // Set top to top + 1 wrapping back to 0
-
-        rprintln!();
-        for r in 0..5 {
-            for g in 0..self.top {
-                for c in 0..5 {
-                    rprint!("{}", self.grids[g].grid[r][c]);
-                }
-                rprint!("  ");
-            }
-            rprint!("\n");
-        }
-        rprintln!();
-
         // Add new grid to buffer
         self.grids[self.top].set(grid.grid);
 
+        // Increment top
         self.top = if self.top + 1 < BUFFER_SIZE {
             self.top + 1
         } else {

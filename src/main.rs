@@ -16,7 +16,7 @@ use microbit::{
     hal::{rng::Rng, timer::Timer},
 };
 use panic_halt as _;
-use rtt_target::{rprintln as print, rtt_init_print};
+use rtt_target::{rprint, rprintln as print, rtt_init_print};
 
 const USING_STALL: bool = cfg!(feature = "detect_stall");
 const STALL_DELAY_SECONDS: u8 = 2;
@@ -32,7 +32,6 @@ enum GameState {
     Running,
     Complement,
     Done,
-    Repeating { delay: u8 },
 }
 
 #[entry]
@@ -68,6 +67,7 @@ fn main() -> ! {
     let mut state = GameState::Randomize;
 
     let mut stall_frame_count = 1;
+    let mut done_frame_count = 1;
 
     loop {
         // Get button states
@@ -95,9 +95,9 @@ fn main() -> ! {
                 GameState::Running
             }
             GameState::Done => {
-                stall_frame_count += 1;
-                if stall_frame_count > 5 {
-                    stall_frame_count = 0;
+                done_frame_count += 1;
+                if done_frame_count > 5 {
+                    done_frame_count = 0;
                     GameState::Randomize
                 } else {
                     GameState::Done
@@ -115,23 +115,22 @@ fn main() -> ! {
                     if USING_STALL {
                         past_grids.set(grid);
                         if past_grids.repeating() {
-                            print!("repeated");
-                            GameState::Repeating { delay: 0 }
+                            if stall_frame_count < STALL_DELAY_FRAMES {
+                                print!("        Delay count --> {}", stall_frame_count);
+                                stall_frame_count += 1;
+                                GameState::Running
+                            } else {
+                                stall_frame_count = 0;
+                                GameState::Randomize
+                            }
                         } else {
+                            print!("Running");
                             GameState::Running
                         }
                     } else {
                         GameState::Running
                     }
                 }
-            }
-            GameState::Repeating { delay: d } if d >= STALL_DELAY_FRAMES => {
-                stall_frame_count = 0;
-                GameState::Randomize
-            }
-            GameState::Repeating { delay: d @ _ } => {
-                print!("waiting");
-                GameState::Repeating { delay: d + 1 }
             }
         };
 
