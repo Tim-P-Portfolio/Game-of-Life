@@ -31,8 +31,8 @@ impl Grid {
         Self { grid: [[0; 5]; 5] }
     }
 
-    pub fn get(self) -> Grid {
-        self
+    pub fn get(&mut self) -> [[u8; 5]; 5] {
+        self.grid
     }
 
     // Flip all grid states
@@ -56,14 +56,14 @@ impl Grid {
         // Display first 3 lines of the text based microbit in the terminal
         if PRINT_MICROBIT {
             for i in 0..4 {
-                rprintln!("\r{}", MICROBIT[i]);
+                rprintln!("{}", MICROBIT[i]);
             }
         }
         // Loop through grid cells
         for c in 0..5 {
             // Print edge and spacing for microbit
             if PRINT_MICROBIT {
-                rprint!("\r│      ")
+                rprint!("│      ")
             }
             for r in 0..5 {
                 // Set led state to random value, 0-127: 0, 128-255: 1
@@ -84,7 +84,7 @@ impl Grid {
         // Display last 3 lines of the microbit in the terminal
         if PRINT_MICROBIT {
             for i in 5..7 {
-                rprintln!("\r{}", MICROBIT[i]);
+                rprintln!("{}", MICROBIT[i]);
             }
         }
     }

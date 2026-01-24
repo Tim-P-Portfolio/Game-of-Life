@@ -61,12 +61,11 @@ fn main() -> ! {
 
     // Initialize the counters
     let mut b_btn_frame_count = 5;
+    let mut stall_frame_count = 1;
+    let mut done_frame_count = 1;
 
     // Initialize state to start as random grid
     let mut state = GameState::Randomize;
-
-    let mut stall_frame_count = 1;
-    let mut done_frame_count = 1;
 
     loop {
         // Get button states
@@ -81,22 +80,25 @@ fn main() -> ! {
             }
             GameState::ButtonBPressed => {
                 debug_rprintln!("Button B pressed");
-                if b_btn_frame_count < 5 {
-                    GameState::Running
-                } else {
-                    b_btn_frame_count = 1;
-                    GameState::Complement
-                }
+
+                b_btn_frame_count = 1;
+                GameState::Complement
             }
             GameState::Randomize => {
                 debug_rprintln!("~~ Randomize");
                 past_grids.clear();
                 grid.generate_random_grid(&mut rng);
-                GameState::Running
+
+                if button_a_pressed {
+                    GameState::Randomize
+                } else {
+                    GameState::Running
+                }
             }
             GameState::Complement => {
                 debug_rprintln!("Complement");
                 grid.complement();
+
                 GameState::Running
             }
             GameState::Done => {
@@ -113,7 +115,7 @@ fn main() -> ! {
                 debug_rprintln!("> Running");
                 if button_a_pressed {
                     GameState::ButtonAPressed
-                } else if button_b_pressed {
+                } else if button_b_pressed && b_btn_frame_count > 5 {
                     GameState::ButtonBPressed
                 } else if done(&grid.grid) {
                     GameState::Done
@@ -148,7 +150,7 @@ fn main() -> ! {
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 
         // Increment B button timeout
-        if b_btn_frame_count < 5 {
+        if b_btn_frame_count <= 5 {
             debug_rprintln!("        Button B delay {}", b_btn_frame_count);
             b_btn_frame_count += 1;
         }

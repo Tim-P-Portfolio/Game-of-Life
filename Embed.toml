@@ -8,9 +8,5 @@ halt_afterwards = false
 [default.rtt]
 enabled = true
 
-up_channels = [
-    { channel = 0, format = "String", show_timestamps = false },
-]
-
 [default.gdb]
 enabled = false
