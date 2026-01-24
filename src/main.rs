@@ -92,7 +92,6 @@ fn main() -> ! {
                 debug_rprintln!("~~ Randomize");
                 past_grids.clear();
                 grid.generate_random_grid(&mut rng);
-
                 GameState::Running
             }
             GameState::Complement => {
@@ -148,7 +147,7 @@ fn main() -> ! {
         // Display the grid
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 
-        // Increment B button timeout 1 2 3 4 5
+        // Increment B button timeout
         if b_btn_frame_count < 5 {
             debug_rprintln!("        Button B delay {}", b_btn_frame_count);
             b_btn_frame_count += 1;

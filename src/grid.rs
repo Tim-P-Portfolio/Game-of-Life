@@ -145,14 +145,13 @@ impl GridBuffer {
     }
 
     pub fn clear(&mut self) {
-        self.top = 0
+        self.top = 0;
+        self.stalled = false
     }
 
     pub fn set(&mut self, grid: Grid) {
         // Add new grid to buffer
         self.grids[self.top].set(grid.grid);
-
-        rprintln!("           TOP --> {}", self.top);
 
         // Increment top
         self.top = if self.top + 1 < BUFFER_SIZE {
