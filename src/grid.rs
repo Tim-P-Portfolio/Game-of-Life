@@ -116,7 +116,7 @@ impl GridBuffer {
 
     pub fn repeating(&self) -> bool {
         match self.top {
-            0..1 => false,
+            0 => false,
             d if d % 2 == 0 => {
                 let unique_len = self.top / 2;
                 let mut repeated = true;
@@ -127,6 +127,7 @@ impl GridBuffer {
                     rprintln!("{}{}", l, r);
                     if self.grids[l].grid != self.grids[r].grid {
                         repeated = false;
+                        rprintln!("Broken");
                         break;
                     }
                 }
@@ -166,15 +167,14 @@ impl GridBuffer {
         // Set top to top + 1 wrapping back to 0
 
         rprintln!();
-        for i in 0..5 {
-            rprintln!(
-                "{}{}{}{}{}",
-                grid.grid[i][0],
-                grid.grid[i][1],
-                grid.grid[i][2],
-                grid.grid[i][3],
-                grid.grid[i][4]
-            );
+        for r in 0..5 {
+            for g in 0..self.top {
+                for c in 0..5 {
+                    rprint!("{}", self.grids[g].grid[r][c]);
+                }
+                rprint!("  ");
+            }
+            rprint!("\n");
         }
         rprintln!();
 
