@@ -16,7 +16,7 @@ use microbit::{
     hal::{rng::Rng, timer::Timer},
 };
 use panic_halt as _;
-use rtt_target::{rprint, rprintln as print, rtt_init_print};
+use rtt_target::{debug_rprintln, debug_rtt_init_print};
 
 const USING_STALL: bool = cfg!(feature = "detect_stall");
 const STALL_DELAY_SECONDS: u8 = 2;
@@ -36,7 +36,7 @@ enum GameState {
 
 #[entry]
 fn main() -> ! {
-    rtt_init_print!();
+    debug_rtt_init_print!();
 
     // Setup microbit board
     let board = Board::take().unwrap();
@@ -54,7 +54,6 @@ fn main() -> ! {
     let mut grid = Grid::new();
     // Grid to check for stall
     let mut past_grids = GridBuffer::new();
-    // let mut past_grid = Grid::new();
 
     // Set buttons as input in pullup state
     let mut button_a = board.buttons.button_a.into_pullup_input();
@@ -76,8 +75,12 @@ fn main() -> ! {
 
         // Match state to operations
         state = match state {
-            GameState::ButtonAPressed => GameState::Randomize,
+            GameState::ButtonAPressed => {
+                debug_rprintln!("Button A pressed");
+                GameState::Randomize
+            }
             GameState::ButtonBPressed => {
+                debug_rprintln!("Button B pressed");
                 if b_btn_frame_count < 5 {
                     GameState::Running
                 } else {
@@ -86,24 +89,29 @@ fn main() -> ! {
                 }
             }
             GameState::Randomize => {
+                debug_rprintln!("~~ Randomize");
+                past_grids.clear();
                 grid.generate_random_grid(&mut rng);
 
                 GameState::Running
             }
             GameState::Complement => {
+                debug_rprintln!("Complement");
                 grid.complement();
                 GameState::Running
             }
             GameState::Done => {
+                debug_rprintln!(" ! Done: {}", done_frame_count);
                 done_frame_count += 1;
                 if done_frame_count > 5 {
-                    done_frame_count = 0;
+                    done_frame_count = 1;
                     GameState::Randomize
                 } else {
                     GameState::Done
                 }
             }
             GameState::Running => {
+                debug_rprintln!("> Running");
                 if button_a_pressed {
                     GameState::ButtonAPressed
                 } else if button_b_pressed {
@@ -113,18 +121,21 @@ fn main() -> ! {
                 } else {
                     life(&mut grid.grid);
                     if USING_STALL {
-                        past_grids.set(grid);
                         if past_grids.repeating() {
                             if stall_frame_count < STALL_DELAY_FRAMES {
-                                print!("        Delay count --> {}", stall_frame_count);
+                                debug_rprintln!(
+                                    "            Stall count --> {}",
+                                    stall_frame_count
+                                );
                                 stall_frame_count += 1;
                                 GameState::Running
                             } else {
-                                stall_frame_count = 0;
+                                stall_frame_count = 1;
                                 GameState::Randomize
                             }
                         } else {
-                            print!("Running");
+                            past_grids.set(grid);
+
                             GameState::Running
                         }
                     } else {
@@ -137,9 +148,10 @@ fn main() -> ! {
         // Display the grid
         display.show(&mut timer1, grid.grid, 1000 / FPS);
 
-        // Increment B button timeout
+        // Increment B button timeout 1 2 3 4 5
         if b_btn_frame_count < 5 {
-            b_btn_frame_count += 1
+            debug_rprintln!("        Button B delay {}", b_btn_frame_count);
+            b_btn_frame_count += 1;
         }
     }
 }

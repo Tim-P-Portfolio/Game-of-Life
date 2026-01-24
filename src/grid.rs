@@ -117,14 +117,16 @@ impl GridBuffer {
     }
 
     pub fn repeating(&mut self) -> bool {
+        if self.top >= BUFFER_SIZE {
+            self.top = 0
+        }
+
         match self.top {
-            0 => {
-                self.stalled = false;
-                self.stalled
-            }
+            0 => self.stalled,
             d if d % 2 == 0 => {
                 self.stalled = true;
-                let length: usize = self.top;
+                let length: usize = self.top / 2;
+
                 for i in 0..length {
                     let l = i;
                     let r = length - i;
@@ -138,18 +140,19 @@ impl GridBuffer {
                 }
                 self.stalled
             }
-            _ => {
-                self.stalled = false;
-                self.stalled
-            }
+            _ => self.stalled,
         }
     }
 
-    fn clear() {}
+    pub fn clear(&mut self) {
+        self.top = 0
+    }
 
     pub fn set(&mut self, grid: Grid) {
         // Add new grid to buffer
         self.grids[self.top].set(grid.grid);
+
+        rprintln!("           TOP --> {}", self.top);
 
         // Increment top
         self.top = if self.top + 1 < BUFFER_SIZE {
