@@ -1,3 +1,5 @@
+use core::str;
+
 use rtt_target::{rprint, rprintln};
 
 use microbit::hal::rng::Rng;
@@ -103,14 +105,12 @@ const BUFFER_SIZE: usize = (MIN_UNIQUE - 1) * 2;
 pub struct GridBuffer {
     pub grids: [Grid; BUFFER_SIZE],
     pub top: usize,
-    pub repeat: usize,
 }
 impl GridBuffer {
     pub fn new() -> Self {
         Self {
             grids: [Grid::new(); BUFFER_SIZE],
             top: 0,
-            repeat: 0,
         }
     }
 
@@ -164,13 +164,27 @@ impl GridBuffer {
         // Buffer len will always be even
 
         // Set top to top + 1 wrapping back to 0
+
+        rprintln!();
+        for i in 0..5 {
+            rprintln!(
+                "{}{}{}{}{}",
+                grid.grid[i][0],
+                grid.grid[i][1],
+                grid.grid[i][2],
+                grid.grid[i][3],
+                grid.grid[i][4]
+            );
+        }
+        rprintln!();
+
+        // Add new grid to buffer
+        self.grids[self.top].set(grid.grid);
+
         self.top = if self.top + 1 < BUFFER_SIZE {
             self.top + 1
         } else {
             0
         };
-
-        // Add new grid to buffer
-        self.grids[self.top].set(grid.grid);
     }
 }
