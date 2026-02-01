@@ -1,3 +1,4 @@
+// https://github.com/orgs/pdx-cs-rust-embedded/
 //! Conway's Game of Life implemented on a 5×5 "frame
 //! buffer" of `u8` pixels that can be either 0 or 1.
 
