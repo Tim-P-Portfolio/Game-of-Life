@@ -95,16 +95,24 @@ fn main() -> ! {
                     GameState::Running
                 }
             }
+            // Inverse all cells
             GameState::Complement => {
                 debug_rprintln!("Complement");
                 grid.complement();
 
                 GameState::Running
             }
+            // State for complete run
             GameState::Done => {
                 debug_rprintln!(" ! Done: {}", done_frame_count);
                 done_frame_count += 1;
-                if done_frame_count > 5 {
+                if button_a_pressed {
+                    done_frame_count = 1;
+                    GameState::ButtonAPressed
+                } else if button_b_pressed && b_btn_frame_count > 5 {
+                    done_frame_count = 1;
+                    GameState::ButtonBPressed
+                } else if done_frame_count > 5 {
                     done_frame_count = 1;
                     GameState::Randomize
                 } else {
