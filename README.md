@@ -12,6 +12,7 @@ Game of Life on the Micro:Bit V2
 
 This project implements the game of life on a Micro:Bit V2.2. Using the display HAL (Hardware Access layer) and a provided game of life logic module.
 
+---
 
 The specs for the project were as follows:
 - [x] The program runs the game at 10 frames per second (updates once per 100ms).
@@ -20,6 +21,8 @@ The specs for the project were as follows:
 - [x] Otherwise, when the B button is not ignored and is pressed, the board is “complemented”: every “on” cell is turned “off” and every “off” cell is turned “on”. The B button is then ignored for 5 frames (0.5s).
 - [x] Otherwise, if the program reaches a state where all cells on the board are off, the program waits 5 frames (0.5s). If it has not received a button press, it then starts with a new random board.
 - [x] Otherwise, normal Life steps are taken.
+
+---
 
 A match statement was used for the gamestate. Routing from a main state to the states for each condition.
 
