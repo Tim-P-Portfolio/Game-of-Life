@@ -84,11 +84,12 @@ fn main() -> ! {
                 b_btn_frame_count = 1;
                 GameState::Complement
             }
+            // Initialize a random grid
             GameState::Randomize => {
                 debug_rprintln!("~~ Randomize");
                 past_grids.clear();
                 grid.generate_random_grid(&mut rng);
-
+                // Continue randomizing as a button is pressed
                 if button_a_pressed {
                     GameState::Randomize
                 } else {
@@ -99,7 +100,7 @@ fn main() -> ! {
             GameState::Complement => {
                 debug_rprintln!("Complement");
                 grid.complement();
-
+                // Return to running state
                 GameState::Running
             }
             // State for complete run
@@ -119,16 +120,20 @@ fn main() -> ! {
                     GameState::Done
                 }
             }
+            // Main state for loop: game logic, input handeling
             GameState::Running => {
                 debug_rprintln!("> Running");
                 if button_a_pressed {
                     GameState::ButtonAPressed
                 } else if button_b_pressed && b_btn_frame_count > 5 {
+                    // When timer is reset run
                     GameState::ButtonBPressed
                 } else if done(&grid.grid) {
+                    // Using done from life.rs
                     GameState::Done
                 } else {
                     life(&mut grid.grid);
+                    // Handel stall case if feature is set
                     if USING_STALL {
                         if past_grids.repeating() {
                             if stall_frame_count < STALL_DELAY_FRAMES {
