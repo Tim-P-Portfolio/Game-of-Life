@@ -31,10 +31,6 @@ impl Grid {
         Self { grid: [[0; 5]; 5] }
     }
 
-    pub fn get(&mut self) -> [[u8; 5]; 5] {
-        self.grid
-    }
-
     // Flip all grid states
     pub fn complement(&mut self) {
         for r in 0..5 {
