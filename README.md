@@ -21,6 +21,8 @@ The specs for the project were as follows:
 - [x] Otherwise, if the program reaches a state where all cells on the board are off, the program waits 5 frames (0.5s). If it has not received a button press, it then starts with a new random board.
 - [x] Otherwise, normal Life steps are taken.
 
+A match statement was used for the gamestate. Routing from a main state to the states for each condition.
+
 Rather than having a done condition I chose to implement a stall condition. The stall condition checks for repeated grid states. When a grid state is repeated 5 times in a row the grid is randomized. This handels the done condition as well.
 
 The stall condition saves a buffer of a set number of past grids and checks for trivial loops.
@@ -28,7 +30,7 @@ The stall condition saves a buffer of a set number of past grids and checks for 
 
 Problems incountered:
   + Initally for the random access I attempted to use the pariferial directly through the pac crate. This was difficult and did not end up working. I switched to using the HAL for access to the hardware random. This was much simpler to work with.
-  + A fair bit of my time working on this project was spent on learing how to deal with strings without the use of the standard library. While completely unnececary
+  + A fair bit of my time working on this project was spent on learing how to deal with strings without the use of the standard library. While completely unnececary for the project I learned a fair bit about string manipulation in rust.
 
   
   
