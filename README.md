@@ -30,6 +30,9 @@ Rather than having a done condition I chose to implement a stall condition. The 
 
 The stall condition saves a buffer of a set number of past grids and checks for trivial loops.
 
+I also implemented a grid generator struct to take code out of main.
+
+---
 
 Problems incountered:
   + Initally for the random access I attempted to use the pariferial directly through the pac crate. This was difficult and did not end up working. I switched to using the HAL for access to the hardware random. This was much simpler to work with.
