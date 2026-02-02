@@ -23,6 +23,9 @@ The specs for the project were as follows:
 
 Rather than having a done condition I chose to implement a stall condition. The stall condition checks for repeated grid states. When a grid state is repeated 5 times in a row the grid is randomized. This handels the done condition as well.
 
+The stall condition saves a buffer of a set number of past grids and checks for trivial loops.
+
+
 Problems incountered:
   + Initally for the random access I attempted to use the pariferial directly through the pac crate. This was difficult and did not end up working. I switched to using the HAL for access to the hardware random. This was much simpler to work with.
   + A fair bit of my time working on this project was spent on learing how to deal with strings without the use of the standard library. While completely unnececary
